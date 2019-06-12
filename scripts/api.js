@@ -32,10 +32,18 @@ const Api = (function(){
 
   };
 
+  const deleteItem = function(id){
+    const options = {
+      method: 'DELETE'
+    };
+    return fetch(`${BASE_URL}items/${id}`, options);
+  };
+
 
   return {
     getItems,
     createItem,
     updateItem,
+    deleteItem,
   };
 }());
