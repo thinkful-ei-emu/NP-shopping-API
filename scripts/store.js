@@ -42,7 +42,7 @@ const store = (function(){
     items: [],
     hideCheckedItems: false,
     searchTerm: '',
-
+    errorKey : '',
     addItem,
     findById,
     findAndDelete,

@@ -53,3 +53,14 @@ button:hover:disabled {
 .shopping-item__checked {
   text-decoration: line-through;
 }
+
+.error-pop{
+  position:fixed;
+  right:1em;
+  top:1em;
+  background-color:red;
+}
+
+.error-close{
+  float:right;
+}

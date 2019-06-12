@@ -5,7 +5,6 @@ $(document).ready(function() {
   shoppingList.bindEventListeners();
   shoppingList.render();
   Api.getItems()
-    .then(res => res.json())
     .then((items) => {
       items.forEach((item) => store.addItem(item));
       shoppingList.render();

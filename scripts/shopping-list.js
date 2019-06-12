@@ -43,6 +43,10 @@ const shoppingList = (function(){
   
   function render() {
     // Filter item list if store prop is true by item.checked === false
+    if(store.errorKey){
+      $('.error-message').append(`${store.errorKey} <br>`);
+      $('.error-pop').removeClass('hidden');
+    }
     let items = [ ...store.items ];
     if (store.hideCheckedItems) {
       items = items.filter(item => !item.checked);
@@ -56,6 +60,7 @@ const shoppingList = (function(){
     // render the shopping list in the DOM
     console.log('`render` ran');
     const shoppingListItemsString = generateShoppingItemsString(items);
+    store.errorKey='';
   
     // insert that HTML into the DOM
     $('.js-shopping-list').html(shoppingListItemsString);
@@ -68,9 +73,12 @@ const shoppingList = (function(){
       const newItemName = $('.js-shopping-list-entry').val();
       $('.js-shopping-list-entry').val('');
       Api.createItem(newItemName)
-        .then(response=> response.json())
         .then(response=> {
           store.addItem(response);
+          render();
+        })
+        .catch(error=>{
+          store.errorKey=`Unable to add. ${error.message}`;
           render();
         });
         
@@ -91,19 +99,33 @@ const shoppingList = (function(){
       const updateObj = {
         checked: !newItem.checked,
       };
-      Api.updateItem(id, updateObj);
-      updateObj.isEditing = false;
-      store.findAndUpdate(id, updateObj);
-      render();
+      console.log(updateObj.checked);
+      Api.updateItem(id, updateObj)
+        .then(() =>{
+          updateObj.isEditing = false;
+          store.findAndUpdate(id, updateObj);
+          render();
+        })
+        .catch(error=>{
+          store.errorKey=`Unable to update check. ${error.message}`;
+          render();
+        });
+      
     });
   }
   
   function handleDeleteItemClicked() {
     $('.js-shopping-list').on('click', '.js-item-delete', event => {
       const id = getItemIdFromElement(event.currentTarget);
-      store.findAndDelete(id);
-      Api.deleteItem(id);
-      render();
+      Api.deleteItem(id)
+        .then(()=> {
+          store.findAndDelete(id);
+          render();
+        })
+        .catch(error=>{
+          store.errorKey=`Unable to delete. ${error.message}`;
+          render();
+        });
     });
   }
   
@@ -114,9 +136,16 @@ const shoppingList = (function(){
       const newName = {
         name: $(event.currentTarget).find('.shopping-item').val()
       };
-      Api.updateItem(id, newName);
-      store.findAndUpdate(id, newName);
-      render();
+      Api.updateItem(id, newName)
+        .then(()=>{
+          store.findAndUpdate(id, newName);
+          render();
+        })
+        .catch(error=>{
+          store.errorKey=`Unable to edit. ${error.message}`;
+          render();
+        });
+      
     });
   }
   
@@ -142,6 +171,16 @@ const shoppingList = (function(){
       render();
     });
   }
+
+  function handleCloseErrorPop(){
+    $('.error-pop').on('click','.error-close', (e)=>{
+      e.preventDefault();
+      console.log($(e.delegateTarget));
+      $(e.delegateTarget).addClass('hidden');
+      $(e.delegateTarget).children('p').html('');
+      store.errorKey='';
+    });
+  }
   
   function bindEventListeners() {
     handleNewItemSubmit();
@@ -151,6 +190,7 @@ const shoppingList = (function(){
     handleToggleFilterClick();
     handleShoppingListSearch();
     handleItemStartEditing();
+    handleCloseErrorPop();
   }
 
   // This object contains the only exposed methods from this module:
