@@ -21,9 +21,21 @@ const Api = (function(){
 
   };
 
+  const updateItem = function(id, objectpatch){
+    const updateObject= JSON.stringify(objectpatch);
+    const options={
+      method:'PATCH',
+      body: updateObject,
+      headers: new Headers({'Content-Type': 'application/json'})
+    };
+    return fetch(`${BASE_URL}items/${id}`, options);
+
+  };
+
 
   return {
     getItems,
     createItem,
+    updateItem,
   };
 }());
